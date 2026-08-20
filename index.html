@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Training Split Generator | James Mankee Fitness</title>
+<meta name="description" content="Answer a few questions and get a training split built around your goals, schedule and experience — free, in under a minute.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <div class="logo">
+      <span class="logo-mark">JM</span>
+      <span class="logo-word">JAMES MANKEE FITNESS</span>
+    </div>
+    <span class="header-tag">FREE SPLIT GENERATOR</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- HERO / STEP 0 -->
+  <section id="screen-hero" class="screen screen-hero is-active">
+    <div class="wrap hero-wrap">
+      <p class="eyebrow">— THE PROGRAMME BUILDER —</p>
+      <h1 class="display-xl">
+        BUILD MY<br>
+        <span class="accent">TRAINING SPLIT</span>
+      </h1>
+      <div class="rule"></div>
+      <p class="hero-sub">Answer 8 quick questions about your goals, schedule and experience. Get a training split built around <em>you</em> — not a generic template. Free, takes under a minute.</p>
+      <button class="btn btn-primary btn-lg" id="btn-start">START MY SPLIT <span aria-hidden="true">&rarr;</span></button>
+      <p class="hero-meta">8 QUESTIONS &middot; 60 SECONDS &middot; NO CREDIT CARD</p>
+    </div>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="screen-quiz" class="screen screen-quiz">
+    <div class="wrap quiz-wrap">
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <p class="step-count" id="step-count">STEP 1 / 8</p>
+
+      <form id="quiz-form">
+
+        <div class="q-step is-active" data-step="1">
+          <p class="q-label">SECTION 01 &middot; THE GOAL</p>
+          <h2 class="q-title">What's your <span class="accent">main goal</span> right now?</h2>
+          <div class="options" data-field="goal">
+            <button type="button" class="option-card" data-value="fat_loss">
+              <span class="option-title">Fat Loss</span>
+              <span class="option-desc">Lose fat, get leaner, keep the muscle</span>
+            </button>
+            <button type="button" class="option-card" data-value="muscle_gain">
+              <span class="option-title">Build Muscle</span>
+              <span class="option-desc">Add size and shape, classic hypertrophy</span>
+            </button>
+            <button type="button" class="option-card" data-value="strength">
+              <span class="option-title">Get Stronger</span>
+              <span class="option-desc">Build raw strength on the big lifts</span>
+            </button>
+            <button type="button" class="option-card" data-value="general">
+              <span class="option-title">General Fitness</span>
+              <span class="option-desc">Feel better, move better, stay consistent</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="q-step" data-step="2">
+          <p class="q-label">SECTION 02 &middot; EXPERIENCE</p>
+          <h2 class="q-title">How long have you been <span class="accent">training seriously?</span></h2>
+          <div class="options" data-field="experience">
+            <button type="button" class="option-card" data-value="beginner">
+              <span class="option-title">New / Under 6 Months</span>
+              <span class="option-desc">Still learning the basic lifts</span>
+            </button>
+            <button type="button" class="option-card" data-value="intermediate">
+              <span class="option-title">6 Months &ndash; 2 Years</span>
+              <span class="option-desc">Comfortable with technique, building consistency</span>
+            </button>
+            <button type="button" class="option-card" data-value="advanced">
+              <span class="option-title">2+ Years</span>
+              <span class="option-desc">Experienced, ready for higher demands</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="q-step" data-step="3">
+          <p class="q-label">SECTION 03 &middot; SCHEDULE</p>
+          <h2 class="q-title">How many days a week can you <span class="accent">actually train?</span></h2>
+          <div class="options options-grid" data-field="days">
+            <button type="button" class="option-card option-compact" data-value="2"><span class="option-title">2 Days</span></button>
+            <button type="button" class="option-card option-compact" data-value="3"><span class="option-title">3 Days</span></button>
+            <button type="button" class="option-card option-compact" data-value="4"><span class="option-title">4 Days</span></button>
+            <button type="button" class="option-card option-compact" data-value="5"><span class="option-title">5 Days</span></button>
+            <button type="button" class="option-card option-compact" data-value="6"><span class="option-title">6 Days</span></button>
+          </div>
+          <p class="q-hint">Be honest — a realistic split beats an ambitious one you'll abandon in week two.</p>
+        </div>
+
+        <div class="q-step" data-step="4">
+          <p class="q-label">SECTION 04 &middot; TIME</p>
+          <h2 class="q-title">How long is each <span class="accent">session</span>, realistically?</h2>
+          <div class="options" data-field="time">
+            <button type="button" class="option-card" data-value="30_45">
+              <span class="option-title">30&ndash;45 Minutes</span>
+            </button>
+            <button type="button" class="option-card" data-value="45_60">
+              <span class="option-title">45&ndash;60 Minutes</span>
+            </button>
+            <button type="button" class="option-card" data-value="60_75">
+              <span class="option-title">60&ndash;75 Minutes</span>
+            </button>
+            <button type="button" class="option-card" data-value="75_plus">
+              <span class="option-title">75+ Minutes</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="q-step" data-step="5">
+          <p class="q-label">SECTION 05 &middot; EQUIPMENT</p>
+          <h2 class="q-title">What do you have <span class="accent">access to?</span></h2>
+          <div class="options" data-field="equipment">
+            <button type="button" class="option-card" data-value="full_gym">
+              <span class="option-title">Full Gym</span>
+              <span class="option-desc">Barbells, machines, cables, everything</span>
+            </button>
+            <button type="button" class="option-card" data-value="home">
+              <span class="option-title">Home Setup</span>
+              <span class="option-desc">Dumbbells, bands, maybe a bench</span>
+            </button>
+            <button type="button" class="option-card" data-value="bodyweight">
+              <span class="option-title">Bodyweight Only</span>
+              <span class="option-desc">No equipment at all</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="q-step" data-step="6">
+          <p class="q-label">SECTION 06 &middot; INJURIES</p>
+          <h2 class="q-title">Anything we need to <span class="accent">train around?</span></h2>
+          <div class="options" data-field="injuries" data-multi="true">
+            <button type="button" class="option-card" data-value="lower_back">
+              <span class="option-title">Lower Back</span>
+            </button>
+            <button type="button" class="option-card" data-value="knees">
+              <span class="option-title">Knees</span>
+            </button>
+            <button type="button" class="option-card" data-value="shoulders">
+              <span class="option-title">Shoulders</span>
+            </button>
+            <button type="button" class="option-card" data-value="none">
+              <span class="option-title">None &mdash; I'm Good</span>
+            </button>
+          </div>
+          <p class="q-hint">Select all that apply. This isn't medical advice — check with a professional for anything serious.</p>
+        </div>
+
+        <div class="q-step" data-step="7">
+          <p class="q-label">SECTION 07 &middot; ABOUT YOU</p>
+          <h2 class="q-title">A little about <span class="accent">you</span></h2>
+          <div class="field-row">
+            <div class="field-col">
+              <label class="field-label">AGE RANGE</label>
+              <div class="options options-grid" data-field="age">
+                <button type="button" class="option-card option-compact" data-value="under18">Under 18</button>
+                <button type="button" class="option-card option-compact" data-value="18_29">18&ndash;29</button>
+                <button type="button" class="option-card option-compact" data-value="30_39">30&ndash;39</button>
+                <button type="button" class="option-card option-compact" data-value="40_49">40&ndash;49</button>
+                <button type="button" class="option-card option-compact" data-value="50_plus">50+</button>
+              </div>
+            </div>
+            <div class="field-col">
+              <label class="field-label">GENDER</label>
+              <div class="options options-grid" data-field="gender">
+                <button type="button" class="option-card option-compact" data-value="female">Female</button>
+                <button type="button" class="option-card option-compact" data-value="male">Male</button>
+                <button type="button" class="option-card option-compact" data-value="other">Prefer Not To Say</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="q-step" data-step="8">
+          <p class="q-label">SECTION 08 &middot; LAST STEP</p>
+          <h2 class="q-title">Where should we <span class="accent">send your split?</span></h2>
+          <p class="q-hint" style="margin-top:-8px;margin-bottom:24px;">Your personalised split is built and shown instantly on the next screen — we'll also send a copy to your inbox.</p>
+          <div class="lead-form">
+            <label class="field-label" for="input-name">FIRST NAME</label>
+            <input class="text-input" type="text" id="input-name" name="fname" placeholder="Jamie" required autocomplete="given-name">
+            <label class="field-label" for="input-email">EMAIL ADDRESS</label>
+            <input class="text-input" type="email" id="input-email" name="email" placeholder="you@email.com" required autocomplete="email">
+            <button type="submit" class="btn btn-primary btn-lg" id="btn-reveal" style="width:100%;margin-top:20px;">REVEAL MY SPLIT <span aria-hidden="true">&rarr;</span></button>
+            <p class="fine-print">By submitting you'll join the James Mankee Fitness list for training tips and offers. Unsubscribe anytime.</p>
+          </div>
+        </div>
+
+      </form>
+
+      <div class="nav-row">
+        <button type="button" class="btn btn-ghost" id="btn-back">&larr; BACK</button>
+        <button type="button" class="btn btn-primary" id="btn-next">NEXT <span aria-hidden="true">&rarr;</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULT -->
+  <section id="screen-result" class="screen screen-result">
+    <div class="result-hero">
+      <div class="wrap">
+        <p class="eyebrow">&mdash; YOUR PROGRAMME &mdash;</p>
+        <h1 class="display-xl" id="result-split-name">YOUR SPLIT</h1>
+        <div class="rule"></div>
+        <p class="hero-sub" id="result-summary"></p>
+      </div>
+    </div>
+
+    <div class="wrap result-wrap">
+      <div class="callout callout-dark" id="result-notes-box" style="display:none;">
+        <p class="callout-label">COACHING NOTES</p>
+        <ul id="result-notes"></ul>
+      </div>
+
+      <div id="result-days"></div>
+
+      <div class="cta-block">
+        <p class="cta-label">— WANT THIS FULLY DIALLED IN? —</p>
+        <h2 class="cta-title">This is your <span class="accent">starting point.</span></h2>
+        <p class="cta-body">Exact loads, progression week to week, exercise swaps, nutrition and weekly check-ins — that's what coaching with James Mankee Fitness is for. This split is free. Getting it optimised for exactly you isn't guesswork.</p>
+        <a href="#" class="btn btn-primary btn-lg" id="btn-apply">APPLY FOR COACHING <span aria-hidden="true">&rarr;</span></a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <span>JAMES MANKEE FITNESS</span>
+    <span id="footer-status">FREE TRAINING SPLIT GENERATOR</span>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
