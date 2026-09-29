@@ -347,6 +347,27 @@ h1, h2, h3 {
 .callout ul { margin: 0; padding-left: 18px; }
 .callout li { margin-bottom: 6px; font-size: 14px; line-height: 1.5; }
 
+.coach-pitch {
+  margin-top: 22px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+.coach-pitch-lead {
+  font-weight: 700;
+  font-size: 14.5px;
+  line-height: 1.55;
+  margin: 0 0 14px;
+  color: var(--white);
+}
+.coach-pitch-body {
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0 0 20px;
+  color: #c7cad6;
+}
+.btn-on-dark { background: var(--orange); color: var(--navy); }
+.btn-on-dark:hover { opacity: 0.92; }
+
 .day-card {
   border: 2px solid var(--border);
   border-radius: var(--radius);

@@ -14,6 +14,12 @@ const MAILCHIMP_ACTION_URL = "https://YOUR-SUBDOMAIN.usXX.list-manage.com/subscr
 /* Set your booking / application link for the coaching CTA */
 const APPLY_URL = "#";
 
+/* Your WhatsApp link for the "Talk to me" button in the coaching notes.
+   Format: https://wa.me/<countrycode><number> with no spaces, +, or leading 0
+   e.g. UK 07123 456789 -> https://wa.me/447123456789
+   Optionally add a prefilled message: https://wa.me/447123456789?text=Hi%20James */
+const WHATSAPP_URL = "#";
+
 /* ---------- STATE ---------- */
 const state = {
   goal: null,
@@ -42,9 +48,11 @@ const quizForm = document.getElementById("quiz-form");
 const progressFill = document.getElementById("progress-fill");
 const stepCount = document.getElementById("step-count");
 const btnApply = document.getElementById("btn-apply");
+const btnWhatsapp = document.getElementById("btn-whatsapp");
 const resultDaysEl = document.getElementById("result-days");
 
 btnApply.href = APPLY_URL;
+btnWhatsapp.href = WHATSAPP_URL;
 
 /* ---------- NAVIGATION ---------- */
 btnStart.addEventListener("click", () => {
@@ -207,18 +215,22 @@ const GOAL_LABEL = {
   general: "General Fitness"
 };
 
+/* Sets kept low per movement (2 accessory / 3 main, max) — volume comes from
+   more exercises, not more sets each. See EXERCISE_COUNT_BY_TIME below. */
 const SCHEME_BY_GOAL = {
-  fat_loss:     { main: "3-4 x 8-10", accessory: "3 x 12-15", tempo: "controlled, short rest" },
-  muscle_gain:  { main: "4 x 6-10",  accessory: "3-4 x 10-15", tempo: "controlled" },
-  strength:     { main: "4-5 x 3-6", accessory: "3 x 8-10",   tempo: "explosive, full rest" },
-  general:      { main: "3 x 8-12",  accessory: "3 x 12-15",  tempo: "moderate" }
+  fat_loss:     { main: "3 x 8-10", accessory: "2 x 12-15", tempo: "controlled, short rest" },
+  muscle_gain:  { main: "3 x 6-10", accessory: "2 x 10-15", tempo: "controlled" },
+  strength:     { main: "3 x 3-6",  accessory: "2 x 8-10",  tempo: "explosive, full rest" },
+  general:      { main: "3 x 8-12", accessory: "2 x 12-15", tempo: "moderate" }
 };
 
+/* With 2 main exercises at 3 sets + the rest at 2 sets, these land close to
+   a 17-set session at 60-75 min and scale proportionally either side. */
 const EXERCISE_COUNT_BY_TIME = {
-  "30_45": 4,
-  "45_60": 5,
-  "60_75": 6,
-  "75_plus": 7
+  "30_45": 6,
+  "45_60": 7,
+  "60_75": 8,
+  "75_plus": 9
 };
 
 /* Exercise pools keyed by [equipment][pattern] */
@@ -267,9 +279,15 @@ function pick(arr, idx) { return arr[idx % arr.length]; }
    experience level); alt is picked from the wider `fullOptions` so a
    deprioritised-but-safe move (e.g. the barbell version) can still show
    up as the listed alternative. Always distinct when possible — alt is
-   null only when there's truly nothing else to offer. */
-function pickPrimaryAndAlt(fullOptions, preferredOptions, idx) {
-  const primary = pick(preferredOptions, idx);
+   null only when there's truly nothing else to offer. `usedNames` steers
+   the primary away from exercises already used earlier in the same
+   session (patterns cycle back around once a session has more exercises
+   than the pattern list is long), falling back to a repeat only if every
+   option in the pool is already in use. */
+function pickPrimaryAndAlt(fullOptions, preferredOptions, idx, usedNames) {
+  const fresh = preferredOptions.filter((o) => !usedNames.has(o));
+  const primaryPool = fresh.length > 0 ? fresh : preferredOptions;
+  const primary = pick(primaryPool, idx);
   const altPool = fullOptions.filter((o) => o !== primary);
   const alt = altPool.length > 0 ? pick(altPool, idx + 1) : null;
   return { primary, alt };
@@ -368,13 +386,15 @@ function buildSession(patterns, equipment, goal, count, injuries, experience) {
   const scheme = SCHEME_BY_GOAL[goal];
   const pool = POOL[equipment];
   const exercises = [];
+  const usedNames = new Set();
   let rotate = Math.floor(Math.random() * 3);
 
   for (let i = 0; i < count; i++) {
     const pattern = safePattern(patterns[i % patterns.length], injuries);
     const safeOptions = poolForInjuries(pool[pattern] || pool.core, injuries);
     const preferredOptions = poolForExperience(safeOptions, experience);
-    const { primary, alt } = pickPrimaryAndAlt(safeOptions, preferredOptions, rotate + i);
+    const { primary, alt } = pickPrimaryAndAlt(safeOptions, preferredOptions, rotate + i, usedNames);
+    usedNames.add(primary);
     const isMain = i < 2;
     exercises.push({
       name: primary,
