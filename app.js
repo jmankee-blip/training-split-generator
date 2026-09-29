@@ -263,12 +263,14 @@ const POOL = {
 
 function pick(arr, idx) { return arr[idx % arr.length]; }
 
-/* Primary + one alternative, always distinct when the (injury-filtered)
-   pool has more than one option; alt is null only when there's truly
-   nothing else safe to offer. */
-function pickPrimaryAndAlt(options, idx) {
-  const primary = pick(options, idx);
-  const altPool = options.filter((o) => o !== primary);
+/* Primary is picked from `preferredOptions` (may be narrowed for
+   experience level); alt is picked from the wider `fullOptions` so a
+   deprioritised-but-safe move (e.g. the barbell version) can still show
+   up as the listed alternative. Always distinct when possible — alt is
+   null only when there's truly nothing else to offer. */
+function pickPrimaryAndAlt(fullOptions, preferredOptions, idx) {
+  const primary = pick(preferredOptions, idx);
+  const altPool = fullOptions.filter((o) => o !== primary);
   const alt = altPool.length > 0 ? pick(altPool, idx + 1) : null;
   return { primary, alt };
 }
@@ -308,6 +310,31 @@ const INJURY_EXCLUDE_KEYWORDS = {
   shoulders: ["Overhead Press", "Pike Push-Up", "Handstand"]
 };
 
+/* Free-weight barbell compounds (and a few technically-demanding
+   bodyweight moves) carry the steepest learning curve in the gym.
+   Under 6 months in, we'd rather put someone on the machine/dumbbell
+   version and let the barbell lift surface as the listed alternative —
+   not hide it, just not lead with it. */
+const BEGINNER_DEPRIORITIZE_KEYWORDS = [
+  "Barbell Back Squat",
+  "Barbell Deadlift",
+  "Romanian Deadlift",
+  "RDL",
+  "Barbell Bench Press",
+  "Barbell Row",
+  "Overhead Press",
+  "Bulgarian Split Squat",
+  "Jump Squat",
+  "Pull-Ups",
+  "Chin-Ups"
+];
+
+function poolForExperience(list, experience) {
+  if (experience !== "beginner") return list;
+  const friendly = list.filter((name) => !BEGINNER_DEPRIORITIZE_KEYWORDS.some((kw) => name.includes(kw)));
+  return friendly.length > 0 ? friendly : list;
+}
+
 /* Some patterns are inherently risky for a flagged injury regardless of
    which named exercise gets picked (e.g. any overhead press for a bad
    shoulder) — redirect the whole pattern to a safer one instead of just
@@ -337,7 +364,7 @@ function poolForInjuries(list, injuries) {
 }
 
 /* Build a session from a list of movement patterns */
-function buildSession(patterns, equipment, goal, count, injuries) {
+function buildSession(patterns, equipment, goal, count, injuries, experience) {
   const scheme = SCHEME_BY_GOAL[goal];
   const pool = POOL[equipment];
   const exercises = [];
@@ -345,8 +372,9 @@ function buildSession(patterns, equipment, goal, count, injuries) {
 
   for (let i = 0; i < count; i++) {
     const pattern = safePattern(patterns[i % patterns.length], injuries);
-    const options = poolForInjuries(pool[pattern] || pool.core, injuries);
-    const { primary, alt } = pickPrimaryAndAlt(options, rotate + i);
+    const safeOptions = poolForInjuries(pool[pattern] || pool.core, injuries);
+    const preferredOptions = poolForExperience(safeOptions, experience);
+    const { primary, alt } = pickPrimaryAndAlt(safeOptions, preferredOptions, rotate + i);
     const isMain = i < 2;
     exercises.push({
       name: primary,
@@ -451,7 +479,8 @@ function buildNotes(data) {
     notes.push("Prioritise a longer warm-up and a couple of extra minutes of mobility work before each session — recovery and joint prep matter more as intensity goes up.");
   }
   if (data.experience === "beginner") {
-    notes.push("You're new to structured training — focus every session on technique first, weight second. The scheme below is a target to build into, not day one.");
+    notes.push("New to training — we've led with machine and dumbbell versions of the main lifts instead of barbell (easier to learn, less to coordinate at once). The barbell version is still listed as your alternative for once you're ready to progress to it.");
+    notes.push("Focus every session on technique and control first, weight second — the rep ranges below are a target to build into, not day one.");
   }
   notes.push("This is a starting template, not a diagnosis or medical advice — check with a professional about any pain that doesn't resolve.");
   return notes;
@@ -487,7 +516,7 @@ function showResult(data) {
   const logStore = getLogStore();
 
   plan.days.forEach((day, i) => {
-    const exercises = buildSession(day.patterns, data.equipment, data.goal, exCount, data.injuries);
+    const exercises = buildSession(day.patterns, data.equipment, data.goal, exCount, data.injuries, data.experience);
     const totalSets = exercises
       .filter((ex) => !ex.isFinisher)
       .reduce((sum, ex) => sum + (parseInt(ex.scheme, 10) || 0), 0);
