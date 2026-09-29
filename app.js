@@ -42,6 +42,7 @@ const quizForm = document.getElementById("quiz-form");
 const progressFill = document.getElementById("progress-fill");
 const stepCount = document.getElementById("step-count");
 const btnApply = document.getElementById("btn-apply");
+const resultDaysEl = document.getElementById("result-days");
 
 btnApply.href = APPLY_URL;
 
@@ -224,7 +225,7 @@ const EXERCISE_COUNT_BY_TIME = {
 const POOL = {
   full_gym: {
     squat: ["Barbell Back Squat", "Leg Press", "Hack Squat"],
-    hinge: ["Barbell Deadlift", "Romanian Deadlift", "Hip Thrust"],
+    hinge: ["Barbell Deadlift", "Romanian Deadlift", "Hip Thrust", "Cable Pull-Through"],
     hpush: ["Barbell Bench Press", "DB Bench Press", "Machine Chest Press"],
     hpull: ["Barbell Row", "Seated Cable Row", "Chest-Supported Row"],
     vpush: ["Overhead Press", "DB Shoulder Press", "Machine Shoulder Press"],
@@ -235,11 +236,11 @@ const POOL = {
     cond: ["Assault Bike Intervals", "Rower Intervals", "Sled Push"]
   },
   home: {
-    squat: ["DB Goblet Squat", "DB Bulgarian Split Squat"],
-    hinge: ["DB Romanian Deadlift", "Single-Leg RDL", "DB Hip Thrust"],
+    squat: ["DB Goblet Squat", "DB Bulgarian Split Squat", "DB Box Squat"],
+    hinge: ["DB Romanian Deadlift", "Single-Leg RDL", "DB Hip Thrust", "DB Glute Bridge"],
     hpush: ["DB Floor Press", "Push-Ups"],
     hpull: ["DB Row", "Band Row"],
-    vpush: ["DB Shoulder Press"],
+    vpush: ["DB Shoulder Press", "DB Arnold Press"],
     vpull: ["Band Pulldown", "Pull-Ups (if bar available)"],
     lunge: ["DB Walking Lunge", "Step-Ups"],
     core: ["DB Deadbug", "Plank", "Russian Twist"],
@@ -247,11 +248,11 @@ const POOL = {
     cond: ["Jump Rope Intervals", "DB Complex", "Bodyweight Circuit"]
   },
   bodyweight: {
-    squat: ["Bodyweight Squat", "Jump Squat"],
+    squat: ["Bodyweight Squat", "Jump Squat", "Box Squat (Bodyweight)"],
     hinge: ["Single-Leg Glute Bridge", "Hip Thrust"],
     hpush: ["Push-Ups", "Decline Push-Ups"],
     hpull: ["Inverted Row", "Towel Row"],
-    vpush: ["Pike Push-Up"],
+    vpush: ["Pike Push-Up", "Kneeling Pike Push-Up"],
     vpull: ["Pull-Ups (if available)", "Doorway Row"],
     lunge: ["Walking Lunge", "Bulgarian Split Squat (Bodyweight)"],
     core: ["Plank", "Hollow Hold", "Mountain Climbers"],
@@ -262,8 +263,47 @@ const POOL = {
 
 function pick(arr, idx) { return arr[idx % arr.length]; }
 
+/* Primary + one alternative, always distinct when the (injury-filtered)
+   pool has more than one option; alt is null only when there's truly
+   nothing else safe to offer. */
+function pickPrimaryAndAlt(options, idx) {
+  const primary = pick(options, idx);
+  const altPool = options.filter((o) => o !== primary);
+  const alt = altPool.length > 0 ? pick(altPool, idx + 1) : null;
+  return { primary, alt };
+}
+
+const PATTERN_CUE = {
+  squat: "Your main lower-body lift for the day — control the descent and drive through the whole foot.",
+  hinge: "Load the hips, not the lower back — think ‘push the floor away’ as you stand tall.",
+  hpush: "Keep the shoulder blades pinned and drive in a straight line, don't let the elbows flare.",
+  hpull: "Row from the shoulder blade first, not just the elbow — squeeze hard at the top.",
+  vpush: "Brace the core before you press overhead — no leaning back to finish the rep.",
+  vpull: "Pull the elbows down and back, not just in — think ‘chest to the bar’.",
+  lunge: "Single-leg work exposes weaknesses fast — go slow and stay balanced before adding load.",
+  core: "Quality over quantity here — every rep controlled, not rushed.",
+  arms: "Isolation work — this is about the pump, not the number on the bar.",
+  cond: "Short and hard — this finishes the session, it isn't another main lift."
+};
+
+const REST_TABLE = {
+  strength: { main: 180, accessory: 75 },
+  muscle_gain: { main: 120, accessory: 60 },
+  fat_loss: { main: 90, accessory: 45 },
+  general: { main: 100, accessory: 60 }
+};
+function restSecondsFor(goal, isMain) {
+  const g = REST_TABLE[goal] || REST_TABLE.general;
+  return isMain ? g.main : g.accessory;
+}
+function formatRest(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return m > 0 ? `${m}:${String(s).padStart(2, "0")}` : `${s}s`;
+}
+
 const INJURY_EXCLUDE_KEYWORDS = {
-  lower_back: ["Deadlift", "Back Squat"],
+  lower_back: ["Deadlift", "RDL", "Back Squat"],
   knees: ["Jump Squat", "Bulgarian Split Squat", "Walking Lunge"],
   shoulders: ["Overhead Press", "Pike Push-Up", "Handstand"]
 };
@@ -306,16 +346,27 @@ function buildSession(patterns, equipment, goal, count, injuries) {
   for (let i = 0; i < count; i++) {
     const pattern = safePattern(patterns[i % patterns.length], injuries);
     const options = poolForInjuries(pool[pattern] || pool.core, injuries);
-    const name = pick(options, rotate + i);
+    const { primary, alt } = pickPrimaryAndAlt(options, rotate + i);
     const isMain = i < 2;
     exercises.push({
-      name,
-      scheme: isMain ? scheme.main : scheme.accessory
+      name: primary,
+      alt,
+      scheme: isMain ? scheme.main : scheme.accessory,
+      cue: PATTERN_CUE[pattern] || PATTERN_CUE.core,
+      restSeconds: restSecondsFor(goal, isMain),
+      isFinisher: false
     });
   }
 
   if (goal === "fat_loss" && count >= 4) {
-    exercises.push({ name: pick(pool.cond, rotate), scheme: "10-15 min finisher" });
+    exercises.push({
+      name: pick(pool.cond, rotate),
+      alt: null,
+      scheme: "10-15 min finisher",
+      cue: PATTERN_CUE.cond,
+      restSeconds: null,
+      isFinisher: true
+    });
   }
 
   return exercises;
@@ -433,22 +484,25 @@ function showResult(data) {
 
   const daysWrap = document.getElementById("result-days");
   daysWrap.innerHTML = "";
+  const logStore = getLogStore();
+
   plan.days.forEach((day, i) => {
     const exercises = buildSession(day.patterns, data.equipment, data.goal, exCount, data.injuries);
+    const totalSets = exercises
+      .filter((ex) => !ex.isFinisher)
+      .reduce((sum, ex) => sum + (parseInt(ex.scheme, 10) || 0), 0);
+
     const card = document.createElement("div");
     card.className = "day-card";
     card.innerHTML = `
-      <div class="day-card-head">
+      <button type="button" class="day-card-head">
         <span class="day-num">${String(i + 1).padStart(2, "0")}</span>
         <span class="day-title">${day.title}</span>
-        <span class="day-sub">${exercises.length} EXERCISES</span>
-      </div>
+        <span class="day-sub">${totalSets} SETS</span>
+        <span class="chevron day-chevron">&#9660;</span>
+      </button>
       <div class="day-body">
-        ${exercises.map((ex) => `
-          <div class="ex-row">
-            <span class="ex-name">${ex.name}</span>
-            <span class="ex-scheme">${ex.scheme}</span>
-          </div>`).join("")}
+        ${exercises.map((ex, j) => renderExerciseCard(ex, j, logStore)).join("")}
       </div>
     `;
     daysWrap.appendChild(card);
@@ -460,11 +514,14 @@ function showResult(data) {
     const rest = document.createElement("div");
     rest.className = "day-card";
     rest.innerHTML = `
-      <div class="day-card-head">
+      <button type="button" class="day-card-head">
         <span class="day-num">${String(plan.days.length + 1).padStart(2, "0")}&ndash;07</span>
         <span class="day-title">Rest / Active Recovery</span>
+        <span class="chevron day-chevron">&#9660;</span>
+      </button>
+      <div class="day-body">
+        <div class="rest-day">Walk, stretch, or light cardio. Recovery is where the training actually pays off.</div>
       </div>
-      <div class="rest-day">Walk, stretch, or light cardio. Recovery is where the training actually pays off.</div>
     `;
     daysWrap.appendChild(rest);
   }
@@ -476,3 +533,135 @@ function sessionLenLabel(v) {
 function equipLabel(v) {
   return { full_gym: "a full gym", home: "a home setup", bodyweight: "bodyweight only" }[v];
 }
+
+/* =========================================================
+   EXERCISE CARD RENDERING + INTERACTIONS
+   ========================================================= */
+
+const LOG_KEY = "jmf_split_log_v1";
+
+function getLogStore() {
+  try {
+    return JSON.parse(localStorage.getItem(LOG_KEY)) || {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function renderExerciseCard(ex, index, logStore) {
+  const expanded = index === 0;
+  const logged = logStore[ex.name];
+
+  const altBlock = ex.alt
+    ? `
+      <p class="alt-label">USE, IN ORDER OF PREFERENCE</p>
+      <div class="alt-row">
+        <span class="alt-badge primary">1</span>
+        <span class="alt-name primary">${ex.name}</span>
+      </div>
+      <div class="alt-row">
+        <span class="alt-badge">2</span>
+        <span class="alt-name">${ex.alt}</span>
+      </div>`
+    : "";
+
+  const restBlock = !ex.isFinisher
+    ? `
+      <div class="rest-row">
+        <span class="rest-label">REST&nbsp;<span class="rest-value">${formatRest(ex.restSeconds)}</span></span>
+        <button type="button" class="btn btn-rest" data-seconds="${ex.restSeconds}">START REST TIMER</button>
+      </div>`
+    : "";
+
+  const logBlock = !ex.isFinisher
+    ? `
+      <div class="log-box" data-exercise="${ex.name.replace(/"/g, "&quot;")}">
+        <p class="log-label">LOG YOUR BEST SET</p>
+        <div class="log-fields">
+          <label class="log-field"><span>REPS</span><input type="number" inputmode="numeric" class="log-reps" placeholder="10" value="${logged ? logged.reps : ""}"></label>
+          <label class="log-field"><span>LOAD</span><input type="text" class="log-load" placeholder="kg" value="${logged ? logged.load : ""}"></label>
+          <button type="button" class="btn btn-primary btn-save-log">SAVE</button>
+        </div>
+      </div>`
+    : "";
+
+  return `
+    <div class="ex-card ${expanded ? "is-expanded" : ""}">
+      <button type="button" class="ex-row-head">
+        <span class="ex-index">${index + 1}</span>
+        <span class="ex-name">${ex.name}</span>
+        <span class="ex-scheme">${ex.scheme}</span>
+        <span class="chevron">${expanded ? "&#9660;" : "&#9656;"}</span>
+      </button>
+      <div class="ex-detail">
+        <p class="ex-cue">${ex.cue}</p>
+        ${altBlock}
+        ${restBlock}
+        ${logBlock}
+      </div>
+    </div>
+  `;
+}
+
+function startRestTimer(btn) {
+  if (btn.dataset.running === "1") return;
+  let seconds = parseInt(btn.dataset.seconds, 10);
+  btn.dataset.running = "1";
+  btn.classList.add("is-running");
+  btn.textContent = formatRest(seconds);
+  const interval = setInterval(() => {
+    seconds -= 1;
+    if (seconds <= 0) {
+      clearInterval(interval);
+      btn.textContent = "START REST TIMER";
+      btn.classList.remove("is-running");
+      btn.dataset.running = "0";
+    } else {
+      btn.textContent = formatRest(seconds);
+    }
+  }, 1000);
+}
+
+function saveLog(btn) {
+  const box = btn.closest(".log-box");
+  const exerciseName = box.dataset.exercise;
+  const reps = box.querySelector(".log-reps").value;
+  const load = box.querySelector(".log-load").value;
+
+  const store = getLogStore();
+  store[exerciseName] = { reps, load, savedAt: Date.now() };
+  localStorage.setItem(LOG_KEY, JSON.stringify(store));
+
+  const original = btn.textContent;
+  btn.textContent = "SAVED";
+  setTimeout(() => { btn.textContent = original; }, 1400);
+}
+
+resultDaysEl.addEventListener("click", (e) => {
+  const dayHead = e.target.closest(".day-card-head");
+  if (dayHead) {
+    const body = dayHead.nextElementSibling;
+    body.classList.toggle("is-collapsed");
+    dayHead.querySelector(".day-chevron").innerHTML = body.classList.contains("is-collapsed") ? "&#9656;" : "&#9660;";
+    return;
+  }
+
+  const exHead = e.target.closest(".ex-row-head");
+  if (exHead) {
+    const card = exHead.closest(".ex-card");
+    card.classList.toggle("is-expanded");
+    exHead.querySelector(".chevron").innerHTML = card.classList.contains("is-expanded") ? "&#9660;" : "&#9656;";
+    return;
+  }
+
+  const restBtn = e.target.closest(".btn-rest");
+  if (restBtn) {
+    startRestTimer(restBtn);
+    return;
+  }
+
+  const saveBtn = e.target.closest(".btn-save-log");
+  if (saveBtn) {
+    saveLog(saveBtn);
+  }
+});

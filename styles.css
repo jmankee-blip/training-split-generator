@@ -360,6 +360,14 @@ h1, h2, h3 {
   align-items: baseline;
   gap: 14px;
   border-bottom: 2px solid var(--border);
+  width: 100%;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  color: inherit;
 }
 .day-num {
   font-family: 'Oswald', sans-serif;
@@ -371,23 +379,44 @@ h1, h2, h3 {
 .day-title { font-size: 20px; color: var(--navy); }
 .day-sub {
   font-family: 'Inter', sans-serif;
+  font-weight: 700;
   font-size: 12px;
   color: var(--ink-soft);
   margin-left: auto;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   white-space: nowrap;
 }
-.day-body { padding: 6px 22px 18px; }
-.ex-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 12px 0;
+.chevron {
+  font-size: 11px;
+  color: var(--ink-soft);
+  line-height: 1;
+}
+.day-body { padding: 4px 22px 8px; }
+.day-body.is-collapsed { display: none; }
+
+.ex-card {
   border-bottom: 1px solid var(--border);
+}
+.ex-card:last-child { border-bottom: none; }
+.ex-row-head {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 14px 0;
+  cursor: pointer;
   font-size: 14.5px;
 }
-.ex-row:last-child { border-bottom: none; }
-.ex-name { color: var(--navy); font-weight: 600; }
+.ex-index {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--ink-soft);
+  min-width: 14px;
+}
+.ex-name { color: var(--navy); font-weight: 600; flex: 1; }
 .ex-scheme {
   font-family: 'Inter', sans-serif;
   color: var(--ink-soft);
@@ -395,6 +424,120 @@ h1, h2, h3 {
   white-space: nowrap;
   font-size: 13px;
 }
+.ex-detail {
+  display: none;
+  padding: 0 0 22px 28px;
+}
+.ex-card.is-expanded .ex-detail { display: block; }
+.ex-cue {
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  line-height: 1.55;
+  margin: 0 0 18px;
+  max-width: 520px;
+}
+.alt-label {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--ink-soft);
+  margin: 0 0 10px;
+}
+.alt-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.alt-badge {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  color: var(--ink-soft);
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.alt-badge.primary { background: var(--navy); color: var(--white); border-color: var(--navy); }
+.alt-name { font-size: 14px; color: var(--ink-soft); }
+.alt-name.primary { color: var(--navy); font-weight: 700; }
+
+.rest-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+.rest-label {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+}
+.rest-value { color: var(--navy); }
+.btn-rest {
+  background: transparent;
+  border: 2px solid var(--border);
+  color: var(--navy);
+  padding: 10px 16px;
+  font-size: 11px;
+}
+.btn-rest:hover { border-color: var(--orange); }
+.btn-rest.is-running { border-color: var(--orange); color: var(--orange-dark); background: #fbf1e4; }
+
+.log-box {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  max-width: 420px;
+}
+.log-label {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--ink-soft);
+  margin: 0 0 12px;
+}
+.log-fields {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+.log-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  flex: 1;
+  min-width: 90px;
+}
+.log-field input {
+  padding: 10px 12px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  color: var(--navy);
+}
+.log-field input:focus { outline: none; border-color: var(--orange); }
+.btn-save-log { padding: 11px 18px; font-size: 11px; }
+
 .rest-day {
   background: var(--cream);
   padding: 22px;
