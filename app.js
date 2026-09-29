@@ -173,14 +173,7 @@ function submitToMailchimp(data) {
 
   const fields = {
     EMAIL: data.email,
-    FNAME: data.fname,
-    GOAL: data.goal,
-    EXPERIEN: data.experience,
-    DAYSWK: data.days,
-    EQUIP: data.equipment,
-    INJURIES: data.injuries.join(", "),
-    AGE: data.age,
-    GENDER: data.gender
+    FNAME: data.fname
   };
   Object.entries(fields).forEach(([key, val]) => {
     const input = document.createElement("input");

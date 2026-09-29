@@ -17,11 +17,11 @@ there's no secret key exposed in the page source.
 2. Copy the `<form action="...">` URL — looks like
    `https://xxxx.usXX.list-manage.com/subscribe/post?u=XXXXXXXX&id=XXXXXXXX`
 3. Paste it into `app.js` as `MAILCHIMP_ACTION_URL`
-4. In Mailchimp, add these merge fields to your audience if you want the quiz
-   answers to come through as data (Audience → Settings → Audience fields):
-   `GOAL`, `EXPERIEN`, `DAYSWK`, `EQUIP`, `INJURIES`, `AGE`, `GENDER`
-   (`EMAIL` and `FNAME` already exist by default). Any field you don't add is
-   simply ignored by Mailchimp — the form won't break.
+
+The app only sends `EMAIL` and `FNAME` — both exist by default on every
+Mailchimp audience, so no extra setup is needed there. (Earlier versions also
+sent the quiz answers as custom fields; that was removed since it wasn't
+needed — just growing the email list, not the quiz data.)
 
 Until you set `MAILCHIMP_ACTION_URL`, the app still works end-to-end (quiz →
 result), it just logs a console warning and skips the subscribe step — safe
