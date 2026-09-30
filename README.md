@@ -1,37 +1,27 @@
 # James Mankee Fitness — Free Training Split Generator
 
 A single-page lead magnet. Visitors answer 8 questions about goals, experience,
-schedule, equipment and injuries, hand over their name + email, and instantly
-get a personalised weekly training split. No build step — just HTML/CSS/JS.
+schedule, equipment and injuries, give a first name, and instantly get a
+personalised weekly training split. No build step — just HTML/CSS/JS.
+
+Lead capture happens upstream in ManyChat (comment/DM a keyword → ManyChat
+asks for their email → ManyChat pushes it to Mailchimp on its own → ManyChat
+sends this link). This site itself doesn't collect or send email anywhere —
+it only asks for a first name, purely to personalize the result screen.
 
 ## Files
 - `index.html` — page structure + all quiz steps
 - `styles.css` — brand styling (navy `#1b1f2d`, amber `#d48c40`, matching your Week 1 PDF)
-- `app.js` — quiz flow, split-generation logic, Mailchimp submission
+- `app.js` — quiz flow + split-generation logic
 
-## 1. Connect Mailchimp (no API key needed)
-This uses Mailchimp's classic embedded-form endpoint — a plain form POST, so
-there's no secret key exposed in the page source.
-
-1. In Mailchimp: **Audience → Signup forms → Embedded forms**
-2. Copy the `<form action="...">` URL — looks like
-   `https://xxxx.usXX.list-manage.com/subscribe/post?u=XXXXXXXX&id=XXXXXXXX`
-3. Paste it into `app.js` as `MAILCHIMP_ACTION_URL`
-
-The app only sends `EMAIL` and `FNAME` — both exist by default on every
-Mailchimp audience, so no extra setup is needed there. (Earlier versions also
-sent the quiz answers as custom fields; that was removed since it wasn't
-needed — just growing the email list, not the quiz data.)
-
-Until you set `MAILCHIMP_ACTION_URL`, the app still works end-to-end (quiz →
-result), it just logs a console warning and skips the subscribe step — safe
-to demo before you've wired it up.
-
-## 2. Set your coaching application link
+## 1. Set your coaching application link
 In `app.js`, set `APPLY_URL` to wherever leads should go after seeing their
 split (an application form, Calendly link, DM, etc). Defaults to `#`.
 
-## 3. Run it locally
+Also set `WHATSAPP_URL` for the "Talk to me" button in the coaching notes
+(format: `https://wa.me/<countrycode><number>`, no spaces or leading 0).
+
+## 2. Run it locally
 No build tools needed — any static server works:
 
 ```bash
@@ -40,10 +30,20 @@ python3 -m http.server 8842
 
 Then open `http://localhost:8842`.
 
-## 4. Deploy
-Upload the 3 files anywhere that serves static files — Netlify, Vercel,
+## 3. Deploy
+Upload the files anywhere that serves static files — Netlify, Vercel,
 GitHub Pages, or straight into your existing website's file manager. No
 server, database, or Node.js required.
+
+## If you ever want website-side email capture too
+Worth doing if the link ever gets shared somewhere other than ManyChat
+(bio link, ads, forwarded screenshots) — ManyChat's capture only fires for
+people who came through its own DM flow. Mailchimp's classic no-backend form
+POST trick doesn't reliably work on newer accounts (their hosted forms now
+require a token a static page can't fake — confirmed by testing against this
+account). The real fix would be a small serverless function (e.g. a Cloudflare
+Worker) holding a Mailchimp API key and calling their API properly. Not set up
+currently — ask if you want it added later.
 
 ## How the split logic works
 `app.js` maps days/week to a split template (Full Body / Upper-Lower / PPL),

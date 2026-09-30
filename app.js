@@ -2,15 +2,6 @@
    James Mankee Fitness — Free Training Split Generator
    ========================================================= */
 
-/* ---------- MAILCHIMP CONFIG ----------
-   Replace with your own embedded-form action URL.
-   Find it in Mailchimp: Audience > Signup forms > Embedded form,
-   grab the <form action="..."> URL. It looks like:
-   https://xxxx.usXX.list-manage.com/subscribe/post?u=XXXXXXXX&id=XXXXXXXX
-   No API key needed — this is the public form-post endpoint.
---------------------------------------------------------- */
-const MAILCHIMP_ACTION_URL = "https://YOUR-SUBDOMAIN.usXX.list-manage.com/subscribe/post?u=YOUR_U&id=YOUR_ID";
-
 /* Set your booking / application link for the coaching CTA */
 const APPLY_URL = "#";
 
@@ -30,8 +21,7 @@ const state = {
   injuries: [],
   age: null,
   gender: null,
-  fname: "",
-  email: ""
+  fname: ""
 };
 
 const TOTAL_STEPS = 8;
@@ -152,50 +142,12 @@ document.querySelectorAll(".options").forEach((group) => {
 quizForm.addEventListener("submit", (e) => {
   e.preventDefault();
   state.fname = document.getElementById("input-name").value.trim();
-  state.email = document.getElementById("input-email").value.trim();
 
-  if (!state.fname || !state.email) return;
+  if (!state.fname) return;
   if (state.injuries.length === 0) state.injuries = ["none"];
 
-  submitToMailchimp(state);
   showResult(state);
 });
-
-function submitToMailchimp(data) {
-  if (MAILCHIMP_ACTION_URL.includes("YOUR-SUBDOMAIN")) {
-    console.warn("Mailchimp not configured yet — skipping subscribe. See MAILCHIMP_ACTION_URL in app.js.");
-    return;
-  }
-  const form = document.createElement("form");
-  form.action = MAILCHIMP_ACTION_URL;
-  form.method = "POST";
-  form.target = "mc-hidden-iframe";
-
-  const fields = {
-    EMAIL: data.email,
-    FNAME: data.fname
-  };
-  Object.entries(fields).forEach(([key, val]) => {
-    const input = document.createElement("input");
-    input.type = "hidden";
-    input.name = key; // Mailchimp merge tag name, e.g. EMAIL, FNAME
-    input.value = val || "";
-    form.appendChild(input);
-  });
-
-  let iframe = document.getElementById("mc-hidden-iframe");
-  if (!iframe) {
-    iframe = document.createElement("iframe");
-    iframe.name = "mc-hidden-iframe";
-    iframe.id = "mc-hidden-iframe";
-    iframe.style.display = "none";
-    document.body.appendChild(iframe);
-  }
-
-  document.body.appendChild(form);
-  form.submit();
-  form.remove();
-}
 
 /* =========================================================
    SPLIT GENERATION ENGINE
